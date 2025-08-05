@@ -63,13 +63,13 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2 bg-white/50 rounded-full px-3 py-1.5 border border-purple-100">
                 <Avatar className="w-6 h-6">
-                  <AvatarImage src={user.profileImageUrl || undefined} />
+                  <AvatarImage src={(user as any)?.profileImageUrl || undefined} />
                   <AvatarFallback className="bg-gradient-to-br from-purple-400 to-pink-400 text-white text-xs">
-                    {user.firstName?.[0] || user.email?.[0] || 'U'}
+                    {(user as any)?.firstName?.[0] || (user as any)?.email?.[0] || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium text-gray-700">
-                  {user.firstName || user.email}
+                  {(user as any)?.firstName || (user as any)?.email}
                 </span>
                 <Button
                   variant="ghost"
