@@ -36,6 +36,17 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Categories table
+export const categories = pgTable("categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name").notNull(),
+  emoji: varchar("emoji").notNull(),
+  color: varchar("color").notNull(), // CSS class for styling
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Tasks table
 export const tasks = pgTable("tasks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -43,7 +54,7 @@ export const tasks = pgTable("tasks", {
   date: varchar("date").notNull(), // YYYY-MM-DD format
   text: text("text").notNull(),
   completed: boolean("completed").default(false),
-  category: varchar("category"), // work, personal, health, urgent
+  categoryId: varchar("category_id").references(() => categories.id, { onDelete: "set null" }),
   dueTime: varchar("due_time"), // HH:MM format
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -53,6 +64,15 @@ export const tasks = pgTable("tasks", {
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   tasks: many(tasks),
+  categories: many(categories),
+}));
+
+export const categoriesRelations = relations(categories, ({ one, many }) => ({
+  user: one(users, {
+    fields: [categories.userId],
+    references: [users.id],
+  }),
+  tasks: many(tasks),
 }));
 
 export const tasksRelations = relations(tasks, ({ one }) => ({
@@ -60,9 +80,22 @@ export const tasksRelations = relations(tasks, ({ one }) => ({
     fields: [tasks.userId],
     references: [users.id],
   }),
+  category: one(categories, {
+    fields: [tasks.categoryId],
+    references: [categories.id],
+  }),
 }));
 
 // Schemas
+export const insertCategorySchema = createInsertSchema(categories).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateCategorySchema = insertCategorySchema.partial();
+
 export const insertTaskSchema = createInsertSchema(tasks).omit({
   id: true,
   userId: true,
@@ -74,6 +107,9 @@ export const updateTaskSchema = insertTaskSchema.partial();
 
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type UpdateCategory = z.infer<typeof updateCategorySchema>;
+export type Category = typeof categories.$inferSelect;
 export type InsertTask = z.infer<typeof insertTaskSchema>;
 export type UpdateTask = z.infer<typeof updateTaskSchema>;
 export type Task = typeof tasks.$inferSelect;

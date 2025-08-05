@@ -1,11 +1,15 @@
 import {
   tasks,
   users,
+  categories,
   type User,
   type UpsertUser,
   type InsertTask,
   type UpdateTask,
   type Task,
+  type InsertCategory,
+  type UpdateCategory,
+  type Category,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -16,6 +20,12 @@ export interface IStorage {
   // (IMPORTANT) these user operations are mandatory for Replit Auth.
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  
+  // Category operations
+  getCategories(userId: string): Promise<Category[]>;
+  createCategory(userId: string, category: InsertCategory): Promise<Category>;
+  updateCategory(userId: string, categoryId: string, updates: UpdateCategory): Promise<Category | undefined>;
+  deleteCategory(userId: string, categoryId: string): Promise<boolean>;
   
   // Task operations
   getTasksByUserAndDate(userId: string, date: string): Promise<Task[]>;
@@ -47,22 +57,117 @@ export class DatabaseStorage implements IStorage {
         },
       })
       .returning();
+    
+    // Initialize default categories for new users
+    const existingCategories = await this.getCategories(user.id);
+    if (existingCategories.length === 0) {
+      await this.initializeDefaultCategories(user.id);
+    }
+    
     return user;
+  }
+
+  // Category operations
+  async getCategories(userId: string): Promise<Category[]> {
+    return await db
+      .select()
+      .from(categories)
+      .where(eq(categories.userId, userId))
+      .orderBy(desc(categories.createdAt));
+  }
+
+  async createCategory(userId: string, category: InsertCategory): Promise<Category> {
+    const [newCategory] = await db
+      .insert(categories)
+      .values({ ...category, userId })
+      .returning();
+    return newCategory;
+  }
+
+  async updateCategory(userId: string, categoryId: string, updates: UpdateCategory): Promise<Category | undefined> {
+    const [updatedCategory] = await db
+      .update(categories)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(eq(categories.id, categoryId), eq(categories.userId, userId)))
+      .returning();
+    return updatedCategory;
+  }
+
+  async deleteCategory(userId: string, categoryId: string): Promise<boolean> {
+    const result = await db
+      .delete(categories)
+      .where(and(eq(categories.id, categoryId), eq(categories.userId, userId)));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async initializeDefaultCategories(userId: string): Promise<Category[]> {
+    const defaultCategories = [
+      { name: "work", emoji: "💼", color: "bg-blue-100 text-blue-700" },
+      { name: "personal", emoji: "🏠", color: "bg-green-100 text-green-700" },
+      { name: "health", emoji: "💪", color: "bg-purple-100 text-purple-700" },
+      { name: "urgent", emoji: "🔥", color: "bg-red-100 text-red-700" },
+    ];
+
+    const createdCategories = [];
+    for (const category of defaultCategories) {
+      const [newCategory] = await db
+        .insert(categories)
+        .values({ ...category, userId })
+        .returning();
+      createdCategories.push(newCategory);
+    }
+    return createdCategories;
   }
 
   // Task operations
   async getTasksByUserAndDate(userId: string, date: string): Promise<Task[]> {
     return await db
-      .select()
+      .select({
+        id: tasks.id,
+        userId: tasks.userId,
+        date: tasks.date,
+        text: tasks.text,
+        completed: tasks.completed,
+        categoryId: tasks.categoryId,
+        dueTime: tasks.dueTime,
+        notes: tasks.notes,
+        createdAt: tasks.createdAt,
+        updatedAt: tasks.updatedAt,
+        category: {
+          id: categories.id,
+          name: categories.name,
+          emoji: categories.emoji,
+          color: categories.color,
+        }
+      })
       .from(tasks)
+      .leftJoin(categories, eq(tasks.categoryId, categories.id))
       .where(and(eq(tasks.userId, userId), eq(tasks.date, date)))
       .orderBy(desc(tasks.createdAt));
   }
 
   async getTasksByUser(userId: string): Promise<Task[]> {
     return await db
-      .select()
+      .select({
+        id: tasks.id,
+        userId: tasks.userId,
+        date: tasks.date,
+        text: tasks.text,
+        completed: tasks.completed,
+        categoryId: tasks.categoryId,
+        dueTime: tasks.dueTime,
+        notes: tasks.notes,
+        createdAt: tasks.createdAt,
+        updatedAt: tasks.updatedAt,
+        category: {
+          id: categories.id,
+          name: categories.name,
+          emoji: categories.emoji,
+          color: categories.color,
+        }
+      })
       .from(tasks)
+      .leftJoin(categories, eq(tasks.categoryId, categories.id))
       .where(eq(tasks.userId, userId))
       .orderBy(desc(tasks.createdAt));
   }

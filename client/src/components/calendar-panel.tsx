@@ -198,32 +198,7 @@ export function CalendarPanel({ selectedDate, onDateSelect }: CalendarPanelProps
         </CardContent>
       </Card>
       
-      {/* Quick Stats */}
-      <Card className="bg-white/70 backdrop-blur-md border-purple-100 shadow-lg shadow-purple-100/50">
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-4">
-            Today's Progress
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Completed</span>
-              <span className="text-sm font-semibold text-emerald-600" data-testid="text-progress-completed">
-                {completedToday} of {totalToday}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <span>{totalToday > 0 ? "Keep going! 🎉" : "Add some tasks to get started!"}</span>
-              <span data-testid="text-progress-percentage">{Math.round(progressPercentage)}%</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   );
 }
