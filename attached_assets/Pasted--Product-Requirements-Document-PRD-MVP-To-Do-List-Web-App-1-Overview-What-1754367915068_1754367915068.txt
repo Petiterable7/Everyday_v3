@@ -1,0 +1,101 @@
+
+
+# **Product Requirements Document (PRD): MVP To-Do List Web App**
+
+---
+
+## **1. Overview**
+
+**What is the app?**
+A web-based to-do list and calendar app where users can create daily tasks, view them across different calendar views (day, week, month), mark tasks as complete, and access their data by signing into their account.
+
+**Primary Goal:**
+Help users manage their day-to-day tasks in a visually clear and simple interface, accessible via any browser with cloud-synced data.
+
+---
+
+## **2. Core Features (MVP)**
+
+### **A. Authentication**
+
+* **Sign Up:** New users can create an account (email + password).
+* **Sign In:** Registered users can log in.
+* **Session Management:** Users stay signed in across sessions (with expiration).
+* **Password Reset:** (Optional for MVP) Basic email reset link.
+
+### **B. To-Do List**
+
+* Users can:
+
+  * Add new tasks for a selected date.
+  * Edit or delete tasks.
+  * Mark tasks as completed (with visual feedback like strike-through or checkbox).
+* Tasks are saved in the database per user and date.
+
+### **C. Calendar View**
+
+* Users can toggle between:
+
+  * **Day view** – See tasks for a specific day.
+  * **Week view** – See tasks across the week.
+  * **Month view** – See an overview of task presence per day.
+* Clicking a date navigates to that day’s task list.
+
+### **D. Data Storage**
+
+* Cloud database (e.g., Firebase Firestore or Supabase Postgres).
+* Each task entry includes:
+
+  * `task_id`
+  * `user_id`
+  * `date`
+  * `task_text`
+  * `completed` (boolean)
+  * `created_at` / `updated_at`
+
+---
+
+## **3. User Flow**
+
+### **First-Time User (Sign Up)**
+
+1. Lands on homepage → Clicks "Sign Up"
+2. Enters email + password → Account created
+3. Redirected to today’s task list
+
+### **Returning User (Sign In)**
+
+1. Goes to homepage → Clicks "Sign In"
+2. Enters credentials → Authenticated
+3. Redirected to the calendar view or task list
+
+### **Using the App**
+
+* Click a date in the calendar → View or create tasks
+* Add task via input box → Appears in task list
+* Mark task done → Task updates visually and in the cloud
+
+---
+
+## **4. Technical Stack Suggestions**
+
+| Function     | Technology (MVP-friendly)                  |
+| ------------ | ------------------------------------------ |
+| Frontend     | React.js / Next.js                         |
+| Calendar UI  | FullCalendar / React Big Calendar / custom |
+| Backend/Auth | Firebase Auth / Supabase Auth              |
+| Database     | Firebase Firestore / Supabase              |
+| Hosting      | Vercel / Netlify                           |
+user MUI components if possible
+---
+
+## **5. Non-Functional Requirements**
+
+* **Responsive Design:** Works on mobile, tablet, desktop
+* **Performance:** Tasks load instantly on selection
+* **Security:** Basic protection of user data (e.g., HTTPS, secure auth)
+* **Accessibility:** Usable with keyboard and screen readers
+
+
+
+
