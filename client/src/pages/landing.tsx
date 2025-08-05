@@ -16,29 +16,8 @@ export default function Landing() {
           </h1>
           
           <p className="text-gray-600 text-lg mb-8">
-            Your colorful task companion for a productive day
+            Everyday counts.
           </p>
-          
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center space-x-3 text-left">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="h-4 w-4 text-white" />
-              </div>
-              <span className="text-gray-700">Beautiful calendar views</span>
-            </div>
-            <div className="flex items-center space-x-3 text-left">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <Sparkles className="h-4 w-4 text-white" />
-              </div>
-              <span className="text-gray-700">Colorful task management</span>
-            </div>
-            <div className="flex items-center space-x-3 text-left">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <Calendar className="h-4 w-4 text-white" />
-              </div>
-              <span className="text-gray-700">Sync across all devices</span>
-            </div>
-          </div>
           
           <Button 
             onClick={() => window.location.href = '/api/login'}

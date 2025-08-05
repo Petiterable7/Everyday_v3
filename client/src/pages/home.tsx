@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { CalendarPanel } from "@/components/calendar-panel";
 import { TaskPanel } from "@/components/task-panel";
+import { QuoteBanner } from "@/components/quote-banner";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar } from "lucide-react";
@@ -88,7 +89,10 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-120px)]">
+        {/* Motivational Quote Banner */}
+        <QuoteBanner />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-180px)]">
           <CalendarPanel 
             selectedDate={selectedDate}
             onDateSelect={handleDateSelect}
