@@ -24,8 +24,8 @@ export interface IStorage {
   // Category operations
   getCategories(userId: string): Promise<Category[]>;
   createCategory(userId: string, category: InsertCategory): Promise<Category>;
-  updateCategory(userId: string, categoryId: string, updates: UpdateCategory): Promise<Category | undefined>;
-  deleteCategory(userId: string, categoryId: string): Promise<boolean>;
+  updateCategory(categoryId: string, userId: string, updates: UpdateCategory): Promise<Category | undefined>;
+  deleteCategory(categoryId: string, userId: string): Promise<boolean>;
   
   // Task operations
   getTasksByUserAndDate(userId: string, date: string): Promise<Task[]>;
@@ -84,7 +84,7 @@ export class DatabaseStorage implements IStorage {
     return newCategory;
   }
 
-  async updateCategory(userId: string, categoryId: string, updates: UpdateCategory): Promise<Category | undefined> {
+  async updateCategory(categoryId: string, userId: string, updates: UpdateCategory): Promise<Category | undefined> {
     const [updatedCategory] = await db
       .update(categories)
       .set({ ...updates, updatedAt: new Date() })
@@ -93,7 +93,7 @@ export class DatabaseStorage implements IStorage {
     return updatedCategory;
   }
 
-  async deleteCategory(userId: string, categoryId: string): Promise<boolean> {
+  async deleteCategory(categoryId: string, userId: string): Promise<boolean> {
     const result = await db
       .delete(categories)
       .where(and(eq(categories.id, categoryId), eq(categories.userId, userId)));

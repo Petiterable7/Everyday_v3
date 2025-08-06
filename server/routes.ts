@@ -36,8 +36,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/categories', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const category = await storage.createCategory(userId, req.body);
-      res.json(category);
+      const validationResult = insertCategorySchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: "Invalid category data",
+          error: fromZodError(validationResult.error).toString()
+        });
+      }
+
+      const category = await storage.createCategory(userId, validationResult.data);
+      res.status(201).json(category);
     } catch (error) {
       console.error("Error creating category:", error);
       res.status(500).json({ message: "Failed to create category" });
@@ -48,7 +57,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const categoryId = req.params.id;
-      const category = await storage.updateCategory(userId, categoryId, req.body);
+      const validationResult = updateCategorySchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: "Invalid category data",
+          error: fromZodError(validationResult.error).toString()
+        });
+      }
+
+      const category = await storage.updateCategory(categoryId, userId, validationResult.data);
       if (!category) {
         return res.status(404).json({ message: "Category not found" });
       }
@@ -63,8 +81,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const categoryId = req.params.id;
-      await storage.deleteCategory(userId, categoryId);
-      res.json({ message: "Category deleted successfully" });
+      const deleted = await storage.deleteCategory(categoryId, userId);
+      if (!deleted) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.status(204).send();
     } catch (error) {
       console.error("Error deleting category:", error);
       res.status(500).json({ message: "Failed to delete category" });
@@ -170,79 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Category routes
-  app.get('/api/categories', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const categories = await storage.getCategoriesByUser(userId);
-      res.json(categories);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      res.status(500).json({ message: "Failed to fetch categories" });
-    }
-  });
 
-  app.post('/api/categories', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const validationResult = insertCategorySchema.safeParse(req.body);
-      
-      if (!validationResult.success) {
-        return res.status(400).json({
-          message: "Invalid category data",
-          error: fromZodError(validationResult.error).toString()
-        });
-      }
-
-      const category = await storage.createCategory(userId, validationResult.data);
-      res.status(201).json(category);
-    } catch (error) {
-      console.error("Error creating category:", error);
-      res.status(500).json({ message: "Failed to create category" });
-    }
-  });
-
-  app.patch('/api/categories/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const categoryId = req.params.id;
-      const validationResult = updateCategorySchema.safeParse(req.body);
-      
-      if (!validationResult.success) {
-        return res.status(400).json({
-          message: "Invalid category data",
-          error: fromZodError(validationResult.error).toString()
-        });
-      }
-
-      const category = await storage.updateCategory(categoryId, userId, validationResult.data);
-      if (!category) {
-        return res.status(404).json({ message: "Category not found" });
-      }
-      
-      res.json(category);
-    } catch (error) {
-      console.error("Error updating category:", error);
-      res.status(500).json({ message: "Failed to update category" });
-    }
-  });
-
-  app.delete('/api/categories/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const categoryId = req.params.id;
-
-      const deleted = await storage.deleteCategory(categoryId, userId);
-      if (!deleted) {
-        return res.status(404).json({ message: "Category not found" });
-      }
-      
-      res.status(204).send();
-    } catch (error) {
-      console.error("Error deleting category:", error);
-      res.status(500).json({ message: "Failed to delete category" });
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;
