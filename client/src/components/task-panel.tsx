@@ -180,14 +180,14 @@ export function TaskPanel({ selectedDate }: TaskPanelProps) {
                 />
               </div>
               <Select
-                value={newTaskCategoryId || ""}
-                onValueChange={(value) => setNewTaskCategoryId(value || null)}
+                value={newTaskCategoryId || "none"}
+                onValueChange={(value) => setNewTaskCategoryId(value === "none" ? null : value)}
               >
                 <SelectTrigger className="w-40 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white/50 backdrop-blur-sm" data-testid="select-task-category">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       <span className={`px-2 py-1 rounded text-xs ${category.color}`}>
