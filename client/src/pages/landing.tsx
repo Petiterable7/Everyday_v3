@@ -1,8 +1,22 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, CheckCircle, Sparkles } from "lucide-react";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 
 export default function Landing() {
+  const [, navigate] = useLocation();
+  
+  // For testing: automatically redirect to main app
+  useEffect(() => {
+    console.log("Landing page loaded, redirecting to main app for testing...");
+    // Auto-redirect after 2 seconds to give time to see what's happening
+    const timer = setTimeout(() => {
+      navigate("/");
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-white/70 backdrop-blur-md border-purple-100 shadow-lg shadow-purple-100/50">
@@ -15,8 +29,12 @@ export default function Landing() {
             Everyday
           </h1>
           
-          <p className="text-gray-600 text-lg mb-8">
+          <p className="text-gray-600 text-lg mb-4">
             Everyday counts.
+          </p>
+          
+          <p className="text-purple-600 text-sm mb-8">
+            🚀 Setting up your workspace... Redirecting in 2 seconds
           </p>
           
           <Button 

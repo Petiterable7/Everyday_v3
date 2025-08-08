@@ -15,11 +15,13 @@ function Router() {
     <Switch>
       {isLoading ? (
         <div className="flex items-center justify-center min-h-screen">
-          <div>Loading...</div>
+          <div className="text-purple-600">🚀 Loading your workspace...</div>
         </div>
       ) : (
         <>
-          <Route path="/" component={Home} />
+          {/* For testing: always show Home, with Landing as fallback */}
+          <Route path="/" component={isAuthenticated ? Home : Landing} />
+          <Route path="/home" component={Home} />
           <Route path="/landing" component={Landing} />
         </>
       )}
