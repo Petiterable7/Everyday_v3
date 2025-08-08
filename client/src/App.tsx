@@ -13,11 +13,14 @@ function Router() {
 
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <div>Loading...</div>
+        </div>
       ) : (
         <>
           <Route path="/" component={Home} />
+          <Route path="/landing" component={Landing} />
         </>
       )}
       <Route component={NotFound} />
