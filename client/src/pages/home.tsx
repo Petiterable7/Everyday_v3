@@ -23,7 +23,7 @@ export default function Home() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = `${import.meta.env.VITE_API_URL}/api/login`;
       }, 500);
     }
   }, [user, isLoading, toast]);
