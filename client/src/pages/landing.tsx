@@ -20,7 +20,13 @@ export default function Landing() {
           </p>
           
           <Button 
-            onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/api/login`}
+            onClick={() => {
+              const apiUrl = import.meta.env.VITE_API_URL;
+              const loginUrl = `${apiUrl}/api/login`;
+              console.log('API URL:', apiUrl);
+              console.log('Login URL:', loginUrl);
+              window.location.href = loginUrl;
+            }}
             className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg"
             data-testid="button-login"
           >
