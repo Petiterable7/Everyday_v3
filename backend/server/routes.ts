@@ -1,13 +1,27 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+// import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertTaskSchema, updateTaskSchema, insertCategorySchema, updateCategorySchema } from "../shared/schema";
 import { fromZodError } from "zod-validation-error";
 
+// Temporary mock authentication for testing
+const mockAuth = (req: any, res: any, next: any) => {
+  // Create a mock user for testing
+  req.user = {
+    claims: {
+      sub: "test-user-123",
+      email: "test@example.com",
+      first_name: "Test",
+      last_name: "User"
+    }
+  };
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
+  // Temporarily disable auth setup
+  // await setupAuth(app);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
