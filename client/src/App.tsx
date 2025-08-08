@@ -9,7 +9,7 @@ import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isLoading } = useAuth();
 
   return (
     <Switch>
@@ -19,8 +19,8 @@ function Router() {
         </div>
       ) : (
         <>
-          {/* For testing: always show Home, with Landing as fallback */}
-          <Route path="/" component={isAuthenticated ? Home : Landing} />
+          {/* For testing: always show Home component */}
+          <Route path="/" component={Home} />
           <Route path="/home" component={Home} />
           <Route path="/landing" component={Landing} />
         </>
