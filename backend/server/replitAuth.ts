@@ -5,7 +5,6 @@ import passport from "passport";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
-import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
 if (!process.env.REPLIT_DOMAINS) {
@@ -24,20 +23,14 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
   
   // Generate a random session secret if not provided
   const sessionSecret = process.env.SESSION_SECRET || 'dev-secret-' + Math.random().toString(36).substring(2, 15);
   
+  // For now, use memory store to avoid SSL/database issues
+  // TODO: Switch back to PostgreSQL store once SSL is configured
   return session({
     secret: sessionSecret,
-    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
