@@ -20,12 +20,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
 
+  // Debug endpoint to check database connection
+  app.get('/api/debug/db', async (req, res) => {
+    try {
+      // Check if users table exists and has password column
+      const result = await db.select().from(users).limit(1);
+      res.json({ 
+        status: "Database connection OK", 
+        tableExists: true,
+        sampleQuery: "Success",
+        userCount: result.length 
+      });
+    } catch (error) {
+      console.error("Database debug error:", error);
+      res.status(500).json({ 
+        status: "Database error", 
+        error: error.message 
+      });
+    }
+  });
+
   // Auth routes
   app.post('/api/register', async (req, res) => {
     try {
+      console.log("Registration attempt:", req.body);
+      
       const validationResult = registerUserSchema.safeParse(req.body);
       
       if (!validationResult.success) {
+        console.log("Validation failed:", validationResult.error);
         return res.status(400).json({
           message: "Invalid registration data",
           error: fromZodError(validationResult.error).toString()
@@ -33,24 +56,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { email, password, firstName, lastName } = validationResult.data;
+      console.log("Validation passed for email:", email);
 
       // Check if user already exists
+      console.log("Checking if user exists...");
       const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      console.log("Existing user check result:", existingUser.length);
       
       if (existingUser.length > 0) {
         return res.status(409).json({ message: "User with this email already exists" });
       }
 
       // Hash password
+      console.log("Hashing password...");
       const hashedPassword = await hashPassword(password);
+      console.log("Password hashed successfully");
 
       // Create user
+      console.log("Creating user in database...");
       const newUser = await db.insert(users).values({
         email,
         password: hashedPassword,
         firstName,
         lastName,
       }).returning();
+      console.log("User created successfully:", newUser[0].id);
 
       // Remove password from response
       const { password: _, ...userWithoutPassword } = newUser[0];
@@ -58,7 +88,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json({ message: "User created successfully", user: userWithoutPassword });
     } catch (error) {
       console.error("Error registering user:", error);
-      res.status(500).json({ message: "Failed to register user" });
+      console.error("Error details:", error.message, error.stack);
+      res.status(500).json({ 
+        message: "Failed to register user", 
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined 
+      });
     }
   });
 
