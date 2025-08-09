@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import { getSession } from "./auth";
 
 const app = express();
 
@@ -20,6 +21,9 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Session middleware must be before routes
+app.use(getSession());
 
 app.use((req, res, next) => {
   const start = Date.now();
