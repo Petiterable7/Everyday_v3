@@ -8,9 +8,16 @@ export function useAuth() {
       console.log("🚀 AUTH: API URL:", import.meta.env.VITE_API_URL);
       
       try {
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user`, {
           credentials: "include",
+          signal: controller.signal,
         });
+        
+        clearTimeout(timeoutId);
         console.log("🚀 AUTH: Response status:", res.status);
         
         if (!res.ok) {
@@ -38,6 +45,7 @@ export function useAuth() {
       }
     },
     retry: false,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   console.log("🚀 AUTH: Current state - user:", user, "isLoading:", isLoading, "error:", error);
