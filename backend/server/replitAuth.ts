@@ -95,7 +95,7 @@ export async function setupAuth(app: Express) {
         name: `replitauth:${domain}`,
         config,
         scope: "openid email profile offline_access",
-        callbackURL: `https://${domain}/api/callback`,
+        callbackURL: `https://everyday-v3-1.onrender.com/api/callback`,
       },
       verify,
     );
@@ -106,15 +106,19 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    // Use the frontend domain for strategy name
+    const frontendDomain = process.env.REPLIT_DOMAINS!.split(",")[0];
+    passport.authenticate(`replitauth:${frontendDomain}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
+    // Use the frontend domain for strategy name
+    const frontendDomain = process.env.REPLIT_DOMAINS!.split(",")[0];
+    passport.authenticate(`replitauth:${frontendDomain}`, {
+      successReturnToOrRedirect: process.env.FRONTEND_URL || "/",
       failureRedirect: "/api/login",
     })(req, res, next);
   });
