@@ -1,10 +1,19 @@
-import { Pool } from '@neondatabase/serverless';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import ws from "ws";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+neonConfig.webSocketConstructor = ws;
+neonConfig.fetchConnectionCache = true;
+neonConfig.useSecureWebSocket = true;
+
+const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
 
 async function initDatabase() {
   try {
     console.log('Starting database initialization...');
+    console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
     
     // Add password column to users table if it doesn't exist
     await pool.query(`
@@ -22,6 +31,7 @@ async function initDatabase() {
     process.exit(0);
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
+    console.error('Error details:', error.message);
     process.exit(1);
   }
 }
