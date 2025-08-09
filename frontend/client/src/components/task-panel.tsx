@@ -32,22 +32,68 @@ export function TaskPanel({ selectedDate }: TaskPanelProps) {
   const { data: tasks = [], isLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks", { date: dateStr }],
     queryFn: async () => {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks?date=${dateStr}`, {
-        credentials: "include",
-      });
-      if (response.status === 401) {
-        throw new Error("401: Unauthorized");
+      console.log("🚀 TASKS: Fetching tasks for", dateStr);
+      try {
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks?date=${dateStr}`, {
+          credentials: "include",
+          signal: controller.signal,
+        });
+        
+        clearTimeout(timeoutId);
+        console.log("🚀 TASKS: Response status:", response.status);
+        
+        if (response.status === 401) {
+          console.log("🚀 TASKS: Unauthorized, returning empty tasks");
+          return [];
+        }
+        if (!response.ok) {
+          console.log("🚀 TASKS: Backend error, returning empty tasks");
+          return [];
+        }
+        const data = await response.json();
+        console.log("🚀 TASKS: Got tasks:", data);
+        return data;
+      } catch (error) {
+        console.log("🚀 TASKS: Error fetching tasks, returning empty array:", error);
+        return []; // Return empty array instead of throwing
       }
-      if (!response.ok) {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-      return response.json();
     },
     retry: false,
   });
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
+    queryFn: async () => {
+      console.log("🚀 CATEGORIES: Fetching categories");
+      try {
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories`, {
+          credentials: "include",
+          signal: controller.signal,
+        });
+        
+        clearTimeout(timeoutId);
+        console.log("🚀 CATEGORIES: Response status:", response.status);
+        
+        if (!response.ok) {
+          console.log("🚀 CATEGORIES: Backend error, returning empty categories");
+          return [];
+        }
+        const data = await response.json();
+        console.log("🚀 CATEGORIES: Got categories:", data);
+        return data;
+      } catch (error) {
+        console.log("🚀 CATEGORIES: Error fetching categories, returning empty array:", error);
+        return [];
+      }
+    },
     retry: false,
   });
 
