@@ -32,7 +32,7 @@ export function TaskPanel({ selectedDate }: TaskPanelProps) {
   const { data: tasks = [], isLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks", { date: dateStr }],
     queryFn: async () => {
-      const response = await fetch(`/api/tasks?date=${dateStr}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks?date=${dateStr}`, {
         credentials: "include",
       });
       if (response.status === 401) {
