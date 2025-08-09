@@ -1,29 +1,32 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 import { CalendarPanel } from "@/components/calendar-panel";
 import { TaskPanel } from "@/components/task-panel";
 import { QuoteBanner } from "@/components/quote-banner";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar } from "lucide-react";
-import { format } from "date-fns";
-import { isUnauthorizedError } from "@/lib/authUtils";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
-  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [, navigate] = useLocation();
 
-  useEffect(() => {
-    // For testing: don't redirect if no user, just show the app
-    if (!isLoading && !user) {
-      console.log("No user found, but continuing with app for testing");
+  const handleLogout = async () => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      navigate("/login");
     }
-  }, [user, isLoading, toast]);
+  };
 
   if (isLoading) {
-    console.log("🚀 HOME: Still loading user...");
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 flex items-center justify-center">
         <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center animate-pulse">
@@ -34,13 +37,10 @@ export default function Home() {
     );
   }
 
-  // For testing: always show the app even without user
-  const mockUser = user || {
-    id: "test-user-123",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User"
-  };
+  if (!user) {
+    navigate("/login");
+    return null;
+  }
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -64,18 +64,18 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2 bg-white/50 rounded-full px-3 py-1.5 border border-purple-100">
                 <Avatar className="w-6 h-6">
-                  <AvatarImage src={(mockUser as any)?.profileImageUrl || undefined} />
+                  <AvatarImage src={user?.profileImageUrl || undefined} />
                   <AvatarFallback className="bg-gradient-to-br from-purple-400 to-pink-400 text-white text-xs">
-                    {(mockUser as any)?.firstName?.[0] || (mockUser as any)?.email?.[0] || 'U'}
+                    {user?.firstName?.[0] || user?.email?.[0] || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium text-gray-700">
-                  {(mockUser as any)?.firstName || (mockUser as any)?.email}
+                  {user?.firstName || user?.email}
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => window.location.href = '/api/logout'}
+                  onClick={handleLogout}
                   className="text-xs text-gray-500 hover:text-gray-700 p-1"
                   data-testid="button-logout"
                 >
