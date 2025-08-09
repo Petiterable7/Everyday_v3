@@ -1,50 +1,16 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-// import { setupAuth, mockAuth } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertTaskSchema, updateTaskSchema, insertCategorySchema, updateCategorySchema } from "../shared/schema";
 import { fromZodError } from "zod-validation-error";
 
-// Temporary mock authentication for testing
-const mockAuth = async (req: any, res: any, next: any) => {
-  // Create a mock user for testing
-  req.user = {
-    claims: {
-      sub: "test-user-123",
-      email: "test@example.com",
-      first_name: "Test",
-      last_name: "User"
-    }
-  };
-  
-  // Ensure user exists in database
-  try {
-    await storage.upsertUser({
-      id: "test-user-123",
-      email: "test@example.com",
-      firstName: "Test",
-      lastName: "User",
-      profileImageUrl: null
-    });
-  } catch (error) {
-    console.log("User already exists or created successfully");
-  }
-  
-  next();
-};
-
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Temporarily disable auth setup for testing
-  // await setupAuth(app);
-  
-  // Add simple login endpoint for testing
-  app.get('/api/login', (req, res) => {
-    // Redirect back to frontend after "login"
-    res.redirect(process.env.FRONTEND_URL || 'http://localhost:5173');
-  });
+  // Set up real authentication
+  await setupAuth(app);
 
   // Auth routes
-  app.get('/api/auth/user', mockAuth, async (req: any, res) => {
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -56,7 +22,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Category routes
-  app.get('/api/categories', mockAuth, async (req: any, res) => {
+  app.get('/api/categories', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const categories = await storage.getCategories(userId);
@@ -67,7 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/categories', mockAuth, async (req: any, res) => {
+  app.post('/api/categories', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const validationResult = insertCategorySchema.safeParse(req.body);
@@ -87,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/categories/:id', mockAuth, async (req: any, res) => {
+  app.patch('/api/categories/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const categoryId = req.params.id;
@@ -111,7 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/categories/:id', mockAuth, async (req: any, res) => {
+  app.delete('/api/categories/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const categoryId = req.params.id;
@@ -127,7 +93,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Task routes
-  app.get('/api/tasks', mockAuth, async (req: any, res) => {
+  app.get('/api/tasks', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const date = req.query.date as string;
@@ -146,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/tasks', mockAuth, async (req: any, res) => {
+  app.post('/api/tasks', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const validationResult = insertTaskSchema.safeParse(req.body);
@@ -166,7 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/tasks/:id', mockAuth, async (req: any, res) => {
+  app.patch('/api/tasks/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const taskId = req.params.id;
@@ -191,7 +157,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/tasks/:id/toggle', mockAuth, async (req: any, res) => {
+  app.patch('/api/tasks/:id/toggle', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const taskId = req.params.id;
@@ -208,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/tasks/:id', mockAuth, async (req: any, res) => {
+  app.delete('/api/tasks/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const taskId = req.params.id;
